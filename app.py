@@ -1,200 +1,275 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import sqlite3
+from io import BytesIO
 
 st.set_page_config(
-    page_title="Dashboard Restoran/Kafe",
-    page_icon="☕",
+    page_title="Dashboard Restoran",
+    page_icon="🍽️",
     layout="wide"
 )
 
-# JUDUL
-st.title("☕ Dashboard Penjualan Restoran/Kafe")
-st.caption("Dashboard interaktif penjualan makanan dan minuman")
+st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
 
-# DATA TRANSAKSI CONTOH
-df = pd.DataFrame({
-    "Menu": [
-        "Nasi Goreng", "Mie Ayam", "Es Teh",
-        "Kopi Susu", "Ayam Geprek", "Jus Jeruk",
-        "Nasi Goreng", "Es Teh", "Mie Ayam",
-        "Kopi Susu", "Ayam Geprek", "Jus Jeruk"
-    ],
-    "Kategori": [
-        "Makanan", "Makanan", "Minuman",
-        "Minuman", "Makanan", "Minuman",
-        "Makanan", "Minuman", "Makanan",
-        "Minuman", "Makanan", "Minuman"
-    ],
-    "Jumlah_Terjual": [
-        20, 15, 30, 18, 25, 12,
-        10, 22, 8, 14, 16, 9
-    ],
-    "Harga": [
-        15000, 12000, 5000, 10000, 18000, 8000,
-        15000, 5000, 12000, 10000, 18000, 8000
-    ],
-    "Shift": [
-        "Pagi", "Pagi", "Pagi", "Malam",
-        "Malam", "Malam", "Malam", "Pagi",
-        "Malam", "Pagi", "Malam", "Pagi"
-    ],
-    "Jenis_Pesanan": [
-        "Dine-in", "Takeaway", "Dine-in", "Takeaway",
-        "Dine-in", "Takeaway", "Takeaway", "Dine-in",
-        "Takeaway", "Dine-in", "Takeaway", "Dine-in"
-    ],
-    "Meja": [
-        1, 0, 2, 0, 3, 0,
-        0, 2, 0, 1, 0, 2
-    ]
-})
+# Membuat database
+conn = sqlite3.connect("restoran.db", check_same_thread=False)
 
-df["Total_Pendapatan"] = (
-    df["Jumlah_Terjual"] * df["Harga"]
+conn.execute("""
+CREATE TABLE IF NOT EXISTS transaksi (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    menu TEXT,
+    kategori TEXT,
+    jumlah INTEGER,
+    harga INTEGER,
+    shift TEXT,
+    jenis_pesanan TEXT,
+    meja INTEGER
 )
+""")
+conn.commit()
 
-# FILTER SIDEBAR
-st.sidebar.header("Filter Data")
 
-jenis = st.sidebar.selectbox(
-    "Jenis Pesanan",
-    ["Semua", "Dine-in", "Takeaway"]
-)
+def ambil_data():
+    return pd.read_sql_query("SELECT * FROM transaksi", conn)
 
-shift_pilihan = st.sidebar.selectbox(
-    "Shift",
-    ["Semua", "Pagi", "Malam"]
-)
 
-filtered = df.copy()
+def hitung_pendapatan(data):
+    if data.empty:
+        return data.assign(Total_Pendapatan=pd.Series(dtype=int))
+    data = data.copy()
+    data["Total_Pendapatan"] = data["jumlah"] * data["harga"]
+    return data
 
-if jenis != "Semua":
-    filtered = filtered[
-        filtered["Jenis_Pesanan"] == jenis
+
+# Data awal hanya dimasukkan jika database masih kosong
+if ambil_data().empty:
+    data_awal = [
+        ("Nasi Goreng", "Makanan", 10, 18000, "Pagi", "Dine-in", 1),
+        ("Mie Goreng", "Makanan", 8, 15000, "Malam", "Takeaway", 2),
+        ("Ayam Geprek", "Makanan", 12, 20000, "Malam", "Dine-in", 3),
+        ("Es Teh", "Minuman", 15, 5000, "Pagi", "Takeaway", 4),
+        ("Kopi Susu", "Minuman", 10, 12000, "Pagi", "Dine-in", 5),
+        ("Jus Jeruk", "Minuman", 7, 10000, "Malam", "Takeaway", 6),
     ]
 
-if shift_pilihan != "Semua":
-    filtered = filtered[
-        filtered["Shift"] == shift_pilihan
-    ]
+    conn.executemany("""
+        INSERT INTO transaksi
+        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, data_awal)
+    conn.commit()
 
-# KPI
-pendapatan = filtered["Total_Pendapatan"].sum()
-terjual = filtered["Jumlah_Terjual"].sum()
-meja = filtered["Meja"].sum()
 
-st.subheader("Ringkasan Penjualan")
-
-k1, k2, k3 = st.columns(3)
-
-k1.metric(
-    "Total Pendapatan",
-    f"Rp{pendapatan:,.0f}".replace(",", ".")
+# Navigasi halaman
+halaman = st.sidebar.radio(
+    "Pilih Halaman",
+    ["Home", "Dashboard Analytics", "Data Management"]
 )
 
-k2.metric(
-    "Menu Terjual",
-    f"{terjual:,}".replace(",", ".")
-)
+if halaman == "Home":
+    st.header("Selamat Datang!")
+    st.write("""
+    Aplikasi ini digunakan untuk memantau penjualan restoran atau kafe.
 
-k3.metric(
-    "Jumlah Meja Terisi pada Data",
-    f"{meja:,}".replace(",", ".")
-)
+    Fitur yang tersedia:
+    - Dashboard statistik dan grafik.
+    - Pengelolaan data transaksi.
+    - Import data CSV.
+    - Export data CSV dan Excel.
+    """)
+    st.info("Pilih menu di sebelah kiri untuk mulai menggunakan aplikasi.")
 
-st.divider()
 
-# GRAFIK MENU FAVORIT
-st.subheader("📊 Menu Paling Favorit")
+elif halaman == "Dashboard Analytics":
+    data = hitung_pendapatan(ambil_data())
 
-menu = (
-    filtered.groupby("Menu", as_index=False)
-    ["Jumlah_Terjual"].sum()
-    .sort_values("Jumlah_Terjual", ascending=False)
-)
+    st.header("📊 Dashboard Analytics")
 
-fig1 = px.bar(
-    menu,
-    x="Menu",
-    y="Jumlah_Terjual",
-    title="Jumlah Menu Terjual",
-    labels={
-        "Menu": "Nama Menu",
-        "Jumlah_Terjual": "Jumlah Terjual"
-    },
-    color="Menu"
-)
+    if data.empty:
+        st.warning("Belum ada data transaksi.")
+    else:
+        jenis = st.sidebar.multiselect(
+            "Jenis Pesanan",
+            sorted(data["jenis_pesanan"].dropna().unique()),
+            default=sorted(data["jenis_pesanan"].dropna().unique())
+        )
 
-st.plotly_chart(fig1, use_container_width=True)
+        shift = st.sidebar.multiselect(
+            "Shift",
+            sorted(data["shift"].dropna().unique()),
+            default=sorted(data["shift"].dropna().unique())
+        )
 
-# GRAFIK PENDAPATAN PER SHIFT
-st.subheader("📈 Pendapatan Berdasarkan Shift")
+        tampil = data[
+            data["jenis_pesanan"].isin(jenis)
+            & data["shift"].isin(shift)
+        ]
 
-shift_data = (
-    filtered.groupby("Shift", as_index=False)
-    ["Total_Pendapatan"].sum()
-)
+        pendapatan = tampil["Total_Pendapatan"].sum()
+        total_menu = tampil["jumlah"].sum()
+        meja_terisi = tampil.loc[
+            tampil["jenis_pesanan"] == "Dine-in", "meja"
+        ].nunique()
 
-urutan_shift = ["Pagi", "Malam"]
-shift_data["Shift"] = pd.Categorical(
-    shift_data["Shift"],
-    categories=urutan_shift,
-    ordered=True
-)
-shift_data = shift_data.sort_values("Shift")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Total Pendapatan", f"Rp{pendapatan:,.0f}")
+        c2.metric("Menu Terjual", f"{total_menu}")
+        c3.metric("Meja Terisi", f"{meja_terisi}")
 
-fig2 = px.line(
-    shift_data,
-    x="Shift",
-    y="Total_Pendapatan",
-    markers=True,
-    title="Perbandingan Pendapatan Shift Pagi dan Malam",
-    labels={
-        "Shift": "Shift",
-        "Total_Pendapatan": "Pendapatan (Rp)"
-    }
-)
+        favorit = tampil.groupby("menu", as_index=False)["jumlah"].sum()
+        favorit = favorit.sort_values("jumlah", ascending=False)
 
-st.plotly_chart(fig2, use_container_width=True)
+        st.subheader("Menu Paling Favorit")
+        st.plotly_chart(
+            px.bar(favorit, x="menu", y="jumlah", title="Jumlah Menu Terjual"),
+            use_container_width=True
+        )
 
-# DIAGRAM MAKANAN DAN MINUMAN
-st.subheader("🥧 Penjualan Makanan vs Minuman")
+        omzet = tampil.groupby("shift", as_index=False)[
+            "Total_Pendapatan"
+        ].sum()
 
-kategori = (
-    filtered.groupby("Kategori", as_index=False)
-    ["Jumlah_Terjual"].sum()
-)
+        st.subheader("Pendapatan Berdasarkan Shift")
+        st.plotly_chart(
+            px.line(
+                omzet,
+                x="shift",
+                y="Total_Pendapatan",
+                markers=True,
+                title="Total Pendapatan per Shift"
+            ),
+            use_container_width=True
+        )
 
-fig3 = px.pie(
-    kategori,
-    names="Kategori",
-    values="Jumlah_Terjual",
-    title="Proporsi Penjualan Berdasarkan Kategori"
-)
+        kategori = tampil.groupby("kategori", as_index=False)["jumlah"].sum()
 
-st.plotly_chart(fig3, use_container_width=True)
+        st.subheader("Penjualan Makanan vs Minuman")
+        st.plotly_chart(
+            px.pie(kategori, names="kategori", values="jumlah"),
+            use_container_width=True
+        )
 
-# TABEL TRANSAKSI
-st.subheader("📋 Data Transaksi")
+        st.subheader("Data Transaksi")
+        st.dataframe(tampil, use_container_width=True)
 
-st.dataframe(
-    filtered,
-    use_container_width=True,
-    hide_index=True
-)
 
-# DOWNLOAD CSV
-csv = filtered.to_csv(index=False).encode("utf-8")
+elif halaman == "Data Management":
+    st.header("🗂️ Data Management")
 
-st.download_button(
-    label="📥 Unduh Data Transaksi CSV",
-    data=csv,
-    file_name="data_penjualan_kafe.csv",
-    mime="text/csv"
-)
+    st.write("Tambahkan transaksi baru atau impor data dari file CSV.")
 
-st.caption(
-    "Catatan: Data di atas merupakan data simulasi "
-    "untuk keperluan demonstrasi tugas KKA."
-)
+    with st.expander("➕ Tambah Transaksi", expanded=True):
+        with st.form("form_transaksi"):
+            menu = st.text_input("Nama Menu")
+            kategori = st.selectbox("Kategori", ["Makanan", "Minuman"])
+            jumlah = st.number_input("Jumlah Terjual", min_value=1, value=1)
+            harga = st.number_input("Harga per Menu (Rp)", min_value=0, value=10000)
+            shift = st.selectbox("Shift", ["Pagi", "Malam"])
+            jenis = st.selectbox("Jenis Pesanan", ["Dine-in", "Takeaway"])
+            meja = st.number_input("Nomor Meja", min_value=1, value=1)
+
+            simpan = st.form_submit_button("Simpan Transaksi")
+
+            if simpan:
+                if not menu.strip():
+                    st.error("Nama menu tidak boleh kosong.")
+                else:
+                    conn.execute("""
+                        INSERT INTO transaksi
+                        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        menu.strip(), kategori, jumlah, harga,
+                        shift, jenis, meja
+                    ))
+                    conn.commit()
+                    st.success("Transaksi berhasil disimpan!")
+                    st.rerun()
+
+    st.divider()
+
+    st.subheader("📥 Import Data CSV")
+    st.caption(
+        "Kolom CSV harus bernama: menu, kategori, jumlah, harga, "
+        "shift, jenis_pesanan, meja."
+    )
+
+    file_csv = st.file_uploader("Pilih file CSV", type=["csv"])
+
+    if file_csv is not None:
+        try:
+            csv_data = pd.read_csv(file_csv)
+            kolom_wajib = [
+                "menu", "kategori", "jumlah", "harga",
+                "shift", "jenis_pesanan", "meja"
+            ]
+
+            if all(k in csv_data.columns for k in kolom_wajib):
+                st.dataframe(csv_data.head(), use_container_width=True)
+
+                if st.button("Import CSV ke Database"):
+                    csv_data = csv_data[kolom_wajib].copy()
+                    csv_data["jumlah"] = pd.to_numeric(
+                        csv_data["jumlah"], errors="raise"
+                    )
+                    csv_data["harga"] = pd.to_numeric(
+                        csv_data["harga"], errors="raise"
+                    )
+                    csv_data["meja"] = pd.to_numeric(
+                        csv_data["meja"], errors="raise"
+                    )
+
+                    csv_data.to_sql(
+                        "transaksi", conn, if_exists="append", index=False
+                    )
+                    st.success("Data CSV berhasil diimpor!")
+                    st.rerun()
+            else:
+                st.error("Nama kolom CSV belum sesuai.")
+        except Exception as e:
+            st.error(f"CSV gagal dibaca: {e}")
+
+    st.divider()
+
+    st.subheader("📋 Daftar Transaksi")
+    data = ambil_data()
+    st.dataframe(data, use_container_width=True)
+
+    if not data.empty:
+        pilihan_id = st.selectbox(
+            "Pilih ID transaksi yang akan dihapus",
+            data["id"].tolist()
+        )
+
+        if st.button("🗑️ Hapus Transaksi"):
+            conn.execute(
+                "DELETE FROM transaksi WHERE id = ?", (int(pilihan_id),)
+            )
+            conn.commit()
+            st.success("Transaksi berhasil dihapus.")
+            st.rerun()
+
+        st.divider()
+
+        st.subheader("📤 Export Data")
+
+        csv_bytes = data.to_csv(index=False).encode("utf-8-sig")
+
+        st.download_button(
+            "Download CSV",
+            data=csv_bytes,
+            file_name="data_transaksi_restoran.csv",
+            mime="text/csv"
+        )
+
+        excel_buffer = BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+            data.to_excel(writer, index=False, sheet_name="Transaksi")
+
+        st.download_button(
+            "Download Excel",
+            data=excel_buffer.getvalue(),
+            file_name="data_transaksi_restoran.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )

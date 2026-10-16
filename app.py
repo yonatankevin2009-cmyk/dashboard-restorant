@@ -278,7 +278,7 @@ elif halaman == "Data Management":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         
-                st.subheader("📄 Laporan PDF")
+        st.subheader("📄 Laporan PDF")
 
         if st.button("Buat Laporan PDF"):
             pdf_buffer = BytesIO()

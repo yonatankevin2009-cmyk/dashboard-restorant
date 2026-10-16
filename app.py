@@ -38,7 +38,7 @@ if not st.session_state.sudah_login:
         password = st.text_input("Password", type="password")
         masuk = st.form_submit_button("Login")
 
-   if masuk:
+if masuk:
     if username == "admin" and password == "restoran123":
     st.session_state["logged_in"] = True
     st.rerun()

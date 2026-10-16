@@ -222,20 +222,25 @@ elif halaman == "Data Management":
             simpan = st.form_submit_button("Simpan Transaksi")
 
             if simpan:
-                if not menu.strip():
-                    st.error("Nama menu tidak boleh kosong.")
-                else:
-                    conn.execute("""
-                        INSERT INTO transaksi
-                        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        menu.strip(), kategori, jumlah, harga,
-                        shift, jenis, meja
-                    ))
-                    conn.commit()
-                    st.success("Transaksi berhasil disimpan!")
-                    st.rerun()
+    if not menu.strip():
+        st.error("Nama menu tidak boleh kosong.")
+    else:
+        try:
+            supabase.table("transaksi").insert({
+                "menu": menu.strip(),
+                "kategori": kategori,
+                "jumlah": jumlah,
+                "harga": harga,
+                "shift": shift,
+                "jenis_pesanan": jenis,
+                "meja": meja
+            }).execute()
+
+            st.success("Transaksi berhasil disimpan!")
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"Gagal menyimpan transaksi: {e}")
 
     st.divider()
 

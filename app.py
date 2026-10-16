@@ -3,6 +3,10 @@ import pandas as pd
 import plotly.express as px
 import sqlite3
 from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 
 st.set_page_config(
     page_title="Dashboard Restoran",

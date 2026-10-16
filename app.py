@@ -38,14 +38,22 @@ if not st.session_state.sudah_login:
         password = st.text_input("Password", type="password")
         masuk = st.form_submit_button("Login")
 
-    if masuk:
-        if username == "admin" and password == "restoran123":
-            st.session_state.sudah_login = True
-            st.rerun()
-        else:
-            st.error("Username atau password salah.")
+   if masuk:
+    try:
+        hasil = supabase.auth.sign_in_with_password({
+            "email": username,
+            "password": password
+        })
 
-    st.stop()
+        st.session_state.sudah_login = True
+        st.session_state.user_email = hasil.user.email
+        st.session_state.access_token = hasil.session.access_token
+        st.rerun()
+
+    except Exception:
+        st.error("Email atau password salah. Periksa kembali akun Supabase.")
+
+st.stop()
 
 st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
 

@@ -38,15 +38,18 @@ if not st.session_state.sudah_login:
         password = st.text_input("Password", type="password")
         masuk = st.form_submit_button("Login")
 
-if masuk:
-    if username == "admin" and password == "restoran123":
-        st.session_state["logged_in"] = True
-st.stop()
+    if masuk:
+        if username == "admin" and password == "restoran123":
+            st.session_state.sudah_login = True
+            st.rerun()
+        else:
+            st.error("Username atau password salah.")
+
+    st.stop()
+
+# ===== DASHBOARD =====
 
 st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
-
-# Membuat database
-conn = sqlite3.connect("restoran.db", check_same_thread=False)
 
 conn.execute("""
 CREATE TABLE IF NOT EXISTS transaksi (

@@ -14,6 +14,29 @@ st.set_page_config(
     layout="wide"
 )
 
+# ===== SISTEM LOGIN =====
+
+if "sudah_login" not in st.session_state:
+    st.session_state.sudah_login = False
+
+if not st.session_state.sudah_login:
+    st.title("🔐 Login Dashboard Restoran")
+    st.write("Silakan masuk untuk mengakses aplikasi.")
+
+    with st.form("form_login"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        masuk = st.form_submit_button("Login")
+
+    if masuk:
+        if username == "admin" and password == "restoran123":
+            st.session_state.sudah_login = True
+            st.rerun()
+        else:
+            st.error("Username atau password salah.")
+
+    st.stop()
+
 st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
 
 # Membuat database

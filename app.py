@@ -221,7 +221,7 @@ elif halaman == "Data Management":
 
             simpan = st.form_submit_button("Simpan Transaksi")
 
-    if simpan:
+if simpan:
     if not menu.strip():
         st.error("Nama menu tidak boleh kosong.")
     else:

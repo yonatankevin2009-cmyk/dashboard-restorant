@@ -94,6 +94,10 @@ halaman = st.sidebar.radio(
     ["Home", "Dashboard Analytics", "Data Management"]
 )
 
+if st.sidebar.button("🚪 Logout"):
+    st.session_state.sudah_login = False
+    st.rerun()
+
 if halaman == "Home":
     st.header("Selamat Datang!")
     st.write("""

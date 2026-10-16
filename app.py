@@ -81,8 +81,7 @@ conn.commit()
 
 
 def ambil_data():
-    hasil = supabase.table("transaksi").select("*").execute()
-    return pd.DataFrame(hasil.data)
+    return pd.read_sql_query("SELECT * FROM transaksi", conn)
 
 
 def hitung_pendapatan(data):
@@ -104,16 +103,13 @@ if ambil_data().empty:
         ("Jus Jeruk", "Minuman", 7, 10000, "Malam", "Takeaway", 6),
     ]
 
-    for data in data_awal:
-        supabase.table("transaksi").insert({
-            "menu": data[0],
-            "kategori": data[1],
-            "jumlah": data[2],
-            "harga": data[3],
-            "shift": data[4],
-            "jenis_pesanan": data[5],
-            "meja": data[6]
-        }).execute()
+    conn.executemany("""
+        INSERT INTO transaksi
+        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, data_awal)
+
+    conn.commit()
 
 
 # Navigasi halaman
@@ -234,19 +230,18 @@ if simpan:
     if not menu.strip():
         st.error("Nama menu tidak boleh kosong.")
     else:
-        try:
-            supabase.table("transaksi").insert({
-                "menu": menu.strip(),
-                "kategori": kategori,
-                "jumlah": jumlah,
-                "harga": harga,
-                "shift": shift,
-                "jenis_pesanan": jenis,
-                "meja": meja
-            }).execute()
+        conn.execute("""
+            INSERT INTO transaksi
+            (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            menu.strip(), kategori, jumlah, harga,
+            shift, jenis, meja
+        ))
+        conn.commit()
 
-            st.success("Transaksi berhasil disimpan!")
-            st.rerun()
+        st.success("Transaksi berhasil disimpan!")
+        st.rerun()
 
         except Exception as e:
             st.error(f"Gagal menyimpan transaksi: {e}")

@@ -51,6 +51,10 @@ if not st.session_state.sudah_login:
 
 st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
 
+import sqlite3
+
+conn = sqlite3.connect("restoran.db")
+
 conn.execute("""
 CREATE TABLE IF NOT EXISTS transaksi (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +67,7 @@ CREATE TABLE IF NOT EXISTS transaksi (
     meja INTEGER
 )
 """)
+
 conn.commit()
 
 

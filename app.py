@@ -24,26 +24,35 @@ st.set_page_config(
     layout="wide"
 )
 
-# ===== SISTEM LOGIN =====
+# ===== SISTEM LOGIN SUPABASE =====
 
 if "sudah_login" not in st.session_state:
     st.session_state.sudah_login = False
 
 if not st.session_state.sudah_login:
     st.title("🔐 Login Dashboard Restoran")
-    st.write("Silakan masuk untuk mengakses aplikasi.")
+    st.write("Masuk menggunakan akun Supabase.")
 
     with st.form("form_login"):
-        username = st.text_input("Username")
+        email = st.text_input("Email")
         password = st.text_input("Password", type="password")
         masuk = st.form_submit_button("Login")
 
     if masuk:
-        if username == "admin" and password == "restoran123":
-            st.session_state.sudah_login = True
-            st.rerun()
-        else:
-            st.error("Username atau password salah.")
+        try:
+            hasil_login = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
+
+            if hasil_login.user:
+                st.session_state.sudah_login = True
+                st.session_state.user_email = hasil_login.user.email
+                st.success("Login berhasil!")
+                st.rerun()
+
+        except Exception:
+            st.error("Login gagal. Periksa email dan password.")
 
     st.stop()
 

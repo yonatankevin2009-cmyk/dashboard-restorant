@@ -277,3 +277,78 @@ elif halaman == "Data Management":
             file_name="data_transaksi_restoran.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+        
+                st.subheader("📄 Laporan PDF")
+
+        if st.button("Buat Laporan PDF"):
+            pdf_buffer = BytesIO()
+
+            dokumen = SimpleDocTemplate(
+                pdf_buffer,
+                pagesize=A4
+            )
+
+            gaya = getSampleStyleSheet()
+            isi = []
+
+            isi.append(
+                Paragraph(
+                    "LAPORAN PENJUALAN RESTORAN/KAFE",
+                    gaya["Title"]
+                )
+            )
+            isi.append(Spacer(1, 15))
+
+            total_pendapatan = (
+                data["jumlah"] * data["harga"]
+            ).sum()
+            total_menu = data["jumlah"].sum()
+
+            isi.append(
+                Paragraph(
+                    f"Total Pendapatan: Rp{total_pendapatan:,.0f}",
+                    gaya["Normal"]
+                )
+            )
+            isi.append(
+                Paragraph(
+                    f"Total Menu Terjual: {total_menu}",
+                    gaya["Normal"]
+                )
+            )
+            isi.append(Spacer(1, 15))
+
+            tabel_data = [[
+                "ID", "Menu", "Kategori",
+                "Jumlah", "Harga", "Shift"
+            ]]
+
+            for _, baris in data.iterrows():
+                tabel_data.append([
+                    str(baris["id"]),
+                    str(baris["menu"]),
+                    str(baris["kategori"]),
+                    str(baris["jumlah"]),
+                    f"Rp{baris['harga']:,.0f}",
+                    str(baris["shift"])
+                ])
+
+            tabel = Table(tabel_data, repeatRows=1)
+
+            tabel.setStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ])
+
+            isi.append(tabel)
+            dokumen.build(isi)
+
+            st.download_button(
+                "⬇️ Download Laporan PDF",
+                data=pdf_buffer.getvalue(),
+                file_name="laporan_penjualan_restoran.pdf",
+                mime="application/pdf"
+            )

@@ -72,7 +72,8 @@ conn.commit()
 
 
 def ambil_data():
-    return pd.read_sql_query("SELECT * FROM transaksi", conn)
+    hasil = supabase.table("transaksi").select("*").execute()
+    return pd.DataFrame(hasil.data)
 
 
 def hitung_pendapatan(data):

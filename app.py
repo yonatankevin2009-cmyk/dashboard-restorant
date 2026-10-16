@@ -95,7 +95,7 @@ if ambil_data().empty:
         ("Jus Jeruk", "Minuman", 7, 10000, "Malam", "Takeaway", 6),
     ]
 
-    for data in data_awal:
+for data in data_awal:
     supabase.table("transaksi").insert({
         "menu": data[0],
         "kategori": data[1],

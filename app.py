@@ -95,12 +95,16 @@ if ambil_data().empty:
         ("Jus Jeruk", "Minuman", 7, 10000, "Malam", "Takeaway", 6),
     ]
 
-    conn.executemany("""
-        INSERT INTO transaksi
-        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, data_awal)
-    conn.commit()
+    for data in data_awal:
+    supabase.table("transaksi").insert({
+        "menu": data[0],
+        "kategori": data[1],
+        "jumlah": data[2],
+        "harga": data[3],
+        "shift": data[4],
+        "jenis_pesanan": data[5],
+        "meja": data[6]
+    }).execute()
 
 
 # Navigasi halaman

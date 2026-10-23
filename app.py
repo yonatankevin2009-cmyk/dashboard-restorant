@@ -9,14 +9,89 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
-st.set_page_config(page_title="Dashboard Restoran", page_icon="🍽️", layout="wide")
+st.set_page_config(page_title="Dashboard Restoran", page_icon="R", layout="wide")
 
-# LOGIN DEMO - hanya untuk demonstrasi tugas sekolah
+# =========================================================
+# IKON SVG INLINE — SEMUA ADA DI FILE app.py
+# =========================================================
+SVG_ICONS = {
+    "restaurant": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 2v7a3 3 0 0 0 6 0V2"/><path d="M7 2v20"/>
+      <path d="M16 2v8a3 3 0 0 0 6 0V2"/><path d="M19 13v9"/>
+    </svg>
+    """,
+    "lock": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="10" width="16" height="12" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/>
+    </svg>
+    """,
+    "logout": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/>
+    </svg>
+    """,
+    "chart": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v18h18"/><rect x="6" y="12" width="3" height="6"/>
+      <rect x="11" y="8" width="3" height="10"/><rect x="16" y="4" width="3" height="14"/>
+    </svg>
+    """,
+    "database": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/>
+      <path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/>
+    </svg>
+    """,
+    "plus": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M12 5v14M5 12h14"/>
+    </svg>
+    """,
+    "trash": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/>
+    </svg>
+    """,
+    "document": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2h8l5 5v15H6z"/><path d="M14 2v6h5M9 13h7M9 17h7"/>
+    </svg>
+    """,
+    "download": """
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"
+    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>
+    </svg>
+    """,
+}
+
+def tampilkan_ikon(nama):
+    """Tampilkan ikon SVG langsung dari string di dalam app.py."""
+    svg = SVG_ICONS[nama]
+    st.markdown(
+        f'<span style="display:inline-flex;align-items:center;vertical-align:middle;'
+        f'color:var(--text-color)">{svg}</span>',
+        unsafe_allow_html=True,
+    )
+
+# =========================================================
+# LOGIN DEMO — untuk demonstrasi tugas sekolah
+# =========================================================
 if "sudah_login" not in st.session_state:
     st.session_state.sudah_login = False
 
 if not st.session_state.sudah_login:
-    st.title("🔐 Login Dashboard Restoran")
+    tampilkan_ikon("lock")
+    st.title("Login Dashboard Restoran")
     st.write("Silakan masuk untuk mengakses aplikasi.")
     with st.form("form_login"):
         username = st.text_input("Username")
@@ -30,7 +105,9 @@ if not st.session_state.sudah_login:
             st.error("Username atau password salah.")
     st.stop()
 
+# =========================================================
 # DATABASE SQLITE
+# =========================================================
 @st.cache_resource
 def get_connection():
     return sqlite3.connect("restoran.db", check_same_thread=False)
@@ -50,10 +127,8 @@ CREATE TABLE IF NOT EXISTS transaksi (
 """)
 conn.commit()
 
-
 def ambil_data():
     return pd.read_sql_query("SELECT * FROM transaksi ORDER BY id DESC", conn)
-
 
 def hitung_pendapatan(data):
     data = data.copy()
@@ -62,7 +137,6 @@ def hitung_pendapatan(data):
     else:
         data["Total_Pendapatan"] = data["jumlah"] * data["harga"]
     return data
-
 
 # Data contoh hanya dimasukkan jika tabel kosong
 if ambil_data().empty:
@@ -81,14 +155,24 @@ if ambil_data().empty:
     """, data_awal)
     conn.commit()
 
-st.sidebar.title("🍽️ Menu")
-halaman = st.sidebar.radio("Pilih Halaman", ["Home", "Dashboard Analytics", "Data Management"])
-if st.sidebar.button("🚪 Logout"):
+# =========================================================
+# NAVIGASI
+# =========================================================
+tampilkan_ikon("restaurant")
+st.sidebar.title("Menu")
+halaman = st.sidebar.radio(
+    "Pilih Halaman",
+    ["Home", "Dashboard Analytics", "Data Management"],
+)
+if st.sidebar.button("Logout"):
     st.session_state.sudah_login = False
     st.rerun()
 
-st.title("🍽️ Dashboard Penjualan Restoran/Kafe")
+st.title("Dashboard Penjualan Restoran/Kafe")
 
+# =========================================================
+# HOME
+# =========================================================
 if halaman == "Home":
     st.header("Selamat Datang!")
     st.write("""
@@ -109,9 +193,13 @@ if halaman == "Home":
         b.metric("Total Menu Terjual", f"{data_home['jumlah'].sum():,}")
         c.metric("Jumlah Transaksi", f"{len(data_home):,}")
 
+# =========================================================
+# DASHBOARD ANALYTICS
+# =========================================================
 elif halaman == "Dashboard Analytics":
+    tampilkan_ikon("chart")
+    st.header("Dashboard Analytics")
     data = hitung_pendapatan(ambil_data())
-    st.header("📊 Dashboard Analytics")
     if data.empty:
         st.warning("Belum ada data transaksi.")
     else:
@@ -127,25 +215,40 @@ elif halaman == "Dashboard Analytics":
         a.metric("Total Pendapatan", f"Rp{pendapatan:,.0f}")
         b.metric("Menu Terjual", f"{total_menu:,}")
         c.metric("Meja Terisi", f"{meja_terisi:,}")
+
         if tampil.empty:
             st.warning("Tidak ada transaksi yang sesuai dengan filter.")
         else:
             favorit = tampil.groupby("menu", as_index=False)["jumlah"].sum().sort_values("jumlah", ascending=False)
             st.subheader("Menu Paling Favorit")
-            st.plotly_chart(px.bar(favorit, x="menu", y="jumlah", title="Jumlah Menu Terjual"), use_container_width=True)
+            st.plotly_chart(
+                px.bar(favorit, x="menu", y="jumlah", title="Jumlah Menu Terjual"),
+                use_container_width=True,
+            )
             omzet = tampil.groupby("shift", as_index=False)["Total_Pendapatan"].sum()
             st.subheader("Pendapatan Berdasarkan Shift")
-            st.plotly_chart(px.line(omzet, x="shift", y="Total_Pendapatan", markers=True, title="Total Pendapatan per Shift"), use_container_width=True)
+            st.plotly_chart(
+                px.line(omzet, x="shift", y="Total_Pendapatan", markers=True, title="Total Pendapatan per Shift"),
+                use_container_width=True,
+            )
             kategori_data = tampil.groupby("kategori", as_index=False)["jumlah"].sum()
             st.subheader("Penjualan Makanan vs Minuman")
-            st.plotly_chart(px.pie(kategori_data, names="kategori", values="jumlah"), use_container_width=True)
+            st.plotly_chart(
+                px.pie(kategori_data, names="kategori", values="jumlah"),
+                use_container_width=True,
+            )
             st.subheader("Data Transaksi")
             st.dataframe(tampil, use_container_width=True, hide_index=True)
 
+# =========================================================
+# DATA MANAGEMENT
+# =========================================================
 elif halaman == "Data Management":
-    st.header("🗂️ Data Management")
+    tampilkan_ikon("database")
+    st.header("Data Management")
     st.write("Tambahkan transaksi baru atau impor data CSV.")
-    with st.expander("➕ Tambah Transaksi", expanded=True):
+
+    with st.expander("Tambah Transaksi", expanded=True):
         with st.form("form_transaksi", clear_on_submit=True):
             menu = st.text_input("Nama Menu")
             kategori = st.selectbox("Kategori", ["Makanan", "Minuman"])
@@ -170,7 +273,7 @@ elif halaman == "Data Management":
             st.rerun()
 
     st.divider()
-    st.subheader("📥 Import Data CSV")
+    st.subheader("Import Data CSV")
     st.caption("Kolom CSV wajib: menu, kategori, jumlah, harga, shift, jenis_pesanan, meja.")
     file_csv = st.file_uploader("Pilih file CSV", type=["csv"])
     if file_csv is not None:
@@ -196,33 +299,52 @@ elif halaman == "Data Management":
             st.error(f"CSV gagal dibaca atau diimpor: {e}")
 
     st.divider()
-    st.subheader("📋 Daftar Transaksi")
+    st.subheader("Daftar Transaksi")
     data = ambil_data()
     st.dataframe(data, use_container_width=True, hide_index=True)
+
     if not data.empty:
-        pilihan_id = st.selectbox("Pilih ID transaksi yang akan dihapus", data["id"].astype(int).tolist())
-        if st.button("🗑️ Hapus Transaksi"):
+        pilihan_id = st.selectbox(
+            "Pilih ID transaksi yang akan dihapus",
+            data["id"].astype(int).tolist(),
+        )
+        if st.button("Hapus Transaksi"):
             conn.execute("DELETE FROM transaksi WHERE id = ?", (int(pilihan_id),))
             conn.commit()
             st.success("Transaksi berhasil dihapus.")
             st.rerun()
 
         st.divider()
-        st.subheader("📤 Export Data")
+        st.subheader("Export Data")
         csv_bytes = data.to_csv(index=False).encode("utf-8-sig")
-        st.download_button("Download CSV", data=csv_bytes, file_name="data_transaksi_restoran.csv", mime="text/csv")
+        st.download_button(
+            "Download CSV",
+            data=csv_bytes,
+            file_name="data_transaksi_restoran.csv",
+            mime="text/csv",
+        )
+
         excel_buffer = BytesIO()
         with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
             data.to_excel(writer, index=False, sheet_name="Transaksi")
-        st.download_button("Download Excel", data=excel_buffer.getvalue(), file_name="data_transaksi_restoran.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        st.download_button(
+            "Download Excel",
+            data=excel_buffer.getvalue(),
+            file_name="data_transaksi_restoran.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
         st.divider()
-        st.subheader("📄 Laporan PDF")
+        tampilkan_ikon("document")
+        st.subheader("Laporan PDF")
         if st.button("Buat Laporan PDF"):
             pdf_buffer = BytesIO()
             dokumen = SimpleDocTemplate(pdf_buffer, pagesize=A4)
             gaya = getSampleStyleSheet()
-            isi = [Paragraph("LAPORAN PENJUALAN RESTORAN/KAFE", gaya["Title"]), Spacer(1, 15)]
+            isi = [
+                Paragraph("LAPORAN PENJUALAN RESTORAN/KAFE", gaya["Title"]),
+                Spacer(1, 15),
+            ]
             total_pendapatan = int((data["jumlah"] * data["harga"]).sum())
             total_menu = int(data["jumlah"].sum())
             isi.append(Paragraph(f"Total Pendapatan: Rp{total_pendapatan:,.0f}", gaya["Normal"]))
@@ -230,7 +352,14 @@ elif halaman == "Data Management":
             isi.append(Spacer(1, 15))
             tabel_data = [["ID", "Menu", "Kategori", "Jumlah", "Harga", "Shift"]]
             for _, baris in data.iterrows():
-                tabel_data.append([str(baris["id"]), str(baris["menu"]), str(baris["kategori"]), str(baris["jumlah"]), f"Rp{int(baris['harga']):,}", str(baris["shift"])])
+                tabel_data.append([
+                    str(baris["id"]),
+                    str(baris["menu"]),
+                    str(baris["kategori"]),
+                    str(baris["jumlah"]),
+                    f"Rp{int(baris['harga']):,}",
+                    str(baris["shift"]),
+                ])
             tabel = Table(tabel_data, repeatRows=1, colWidths=[35, 130, 75, 50, 80, 55])
             tabel.setStyle([
                 ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
@@ -241,4 +370,9 @@ elif halaman == "Data Management":
             ])
             isi.append(tabel)
             dokumen.build(isi)
-            st.download_button("⬇️ Download Laporan PDF", data=pdf_buffer.getvalue(), file_name="laporan_penjualan_restoran.pdf", mime="application/pdf")
+            st.download_button(
+                "Download Laporan PDF",
+                data=pdf_buffer.getvalue(),
+                file_name="laporan_penjualan_restoran.pdf",
+                mime="application/pdf",
+            )

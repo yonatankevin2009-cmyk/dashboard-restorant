@@ -1,2 +1,2 @@
 # dashboard-restorant
-    Dashboard Penjualan Restoran dan Kafe
+    Dashboard Penjualan Restoran dan Kafe pangku

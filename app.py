@@ -168,7 +168,7 @@ if st.sidebar.button("Logout"):
     st.session_state.sudah_login = False
     st.rerun()
 
-st.title("Dashboard Penjualan Restoran/Kafe")
+st.title("Dashboard Penjualan Restoran Pangku")
 
 # =========================================================
 # HOME

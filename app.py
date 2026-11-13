@@ -13,14 +13,100 @@ st.set_page_config(page_title="Dashboard Restoran", page_icon="R", layout="wide"
 
 st.markdown("""
 <style>
-.stApp { background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 48%, #eff6ff 100%); }
-[data-testid="stSidebar"] { background: linear-gradient(180deg, #17324d 0%, #245b73 100%); }
+:root { color-scheme: light; }
+.stApp {
+    background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 48%, #eff6ff 100%);
+    color: #172b4d !important;
+}
+/* Warna dasar semua tulisan */
+html, body, [class*="css"], .stMarkdown, .stText,
+p, label, small, li, span, div {
+    color: #243247;
+}
+h1, h2, h3, h4, h5, h6,
+[data-testid="stHeader"] h1,
+[data-testid="stHeader"] h2 {
+    color: #17324d !important;
+    font-weight: 750 !important;
+}
+.stCaption, [data-testid="stCaptionContainer"] {
+    color: #526174 !important;
+}
+/* Sidebar gelap dengan tulisan putih */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #17324d 0%, #245b73 100%);
+}
 [data-testid="stSidebar"] * { color: #ffffff !important; }
 .block-container { padding-top: 1.8rem; }
-[data-testid="stMetric"] { background: #ffffff; border: 1px solid #fed7aa; padding: 16px; border-radius: 14px; box-shadow: 0 4px 14px rgba(30,41,59,.07); }
-div.stButton > button, div.stDownloadButton > button, div.stFormSubmitButton > button { background: #ea580c; color: white; border: 0; border-radius: 9px; }
-div.stButton > button:hover, div.stDownloadButton > button:hover { background: #c2410c; color: white; }
-h1, h2, h3 { color: #17324d; }
+/* Kartu statistik */
+[data-testid="stMetric"] {
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(30,41,59,.07);
+}
+[data-testid="stMetric"] label,
+[data-testid="stMetricLabel"] p { color: #526174 !important; }
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] div { color: #17324d !important; }
+/* Kolom input agar tidak hitam dan teks terlihat */
+input, textarea,
+[data-baseweb="input"] input,
+[data-baseweb="textarea"] textarea,
+[data-baseweb="select"] > div {
+    background-color: #ffffff !important;
+    color: #172b4d !important;
+    -webkit-text-fill-color: #172b4d !important;
+    border-color: #94a3b8 !important;
+}
+input::placeholder, textarea::placeholder {
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+    opacity: 1 !important;
+}
+[data-testid="stTextInput"] label,
+[data-testid="stSelectbox"] label,
+[data-testid="stNumberInput"] label,
+[data-testid="stFileUploader"] label,
+[data-testid="stCheckbox"] label,
+[data-testid="stRadio"] label {
+    color: #243247 !important;
+    font-weight: 600 !important;
+}
+/* Form login tampil sebagai kartu putih */
+[data-testid="stForm"] {
+    background: rgba(255,255,255,.88);
+    border: 1px solid #d1d5db;
+    border-radius: 16px;
+    padding: 22px;
+}
+/* Tombol */
+div.stButton > button,
+div.stDownloadButton > button,
+div.stFormSubmitButton > button {
+    background: #ea580c !important;
+    color: #ffffff !important;
+    border: 0;
+    border-radius: 9px;
+    font-weight: 650;
+}
+div.stButton > button *,
+div.stDownloadButton > button *,
+div.stFormSubmitButton > button * { color: #ffffff !important; }
+div.stButton > button:hover,
+div.stDownloadButton > button:hover,
+div.stFormSubmitButton > button:hover {
+    background: #c2410c !important;
+    color: #ffffff !important;
+}
+/* Pesan informasi dan tabel */
+[data-testid="stAlert"] * { color: #243247 !important; }
+[data-testid="stDataFrame"] { background: #ffffff; }
+[data-testid="stExpander"] {
+    background: rgba(255,255,255,.72);
+    border-radius: 12px;
+}
 </style>
 """, unsafe_allow_html=True)
 

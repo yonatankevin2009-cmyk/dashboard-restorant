@@ -97,16 +97,21 @@ div.stFormSubmitButton > button:hover {
     color: #ffffff !important;
 }
 /* Kotak info: cokelat tua dengan teks krem agar kontras */
+/* Semua lapisan kotak notifikasi memakai cokelat, tanpa sisa biru tua */
 [data-testid="stAlert"],
-[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {
+[data-testid="stAlert"] > div,
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"],
+[data-baseweb="notification"],
+[role="alert"] {
     background: #6b452d !important;
+    background-color: #6b452d !important;
     border-color: #8a6242 !important;
     border-radius: 12px !important;
+    box-shadow: none !important;
 }
 [data-testid="stAlert"] *,
-[data-testid="stAlert"] p,
-[data-testid="stAlert"] span,
-[data-testid="stAlert"] div {
+[data-baseweb="notification"] *,
+[role="alert"] * {
     color: #fff8e7 !important;
     -webkit-text-fill-color: #fff8e7 !important;
 }

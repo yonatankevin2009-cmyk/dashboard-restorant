@@ -11,6 +11,19 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
 st.set_page_config(page_title="Dashboard Restoran", page_icon="R", layout="wide")
 
+st.markdown("""
+<style>
+.stApp { background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 48%, #eff6ff 100%); }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #17324d 0%, #245b73 100%); }
+[data-testid="stSidebar"] * { color: #ffffff !important; }
+.block-container { padding-top: 1.8rem; }
+[data-testid="stMetric"] { background: #ffffff; border: 1px solid #fed7aa; padding: 16px; border-radius: 14px; box-shadow: 0 4px 14px rgba(30,41,59,.07); }
+div.stButton > button, div.stDownloadButton > button, div.stFormSubmitButton > button { background: #ea580c; color: white; border: 0; border-radius: 9px; }
+div.stButton > button:hover, div.stDownloadButton > button:hover { background: #c2410c; color: white; }
+h1, h2, h3 { color: #17324d; }
+</style>
+""", unsafe_allow_html=True)
+
 # =========================================================
 # IKON SVG INLINE — SEMUA ADA DI FILE app.py
 # =========================================================
@@ -98,7 +111,7 @@ if not st.session_state.sudah_login:
         password = st.text_input("Password", type="password")
         masuk = st.form_submit_button("Login")
     if masuk:
-        if username == "admin" and password == "restoran1234":
+        if username == "admin" and password == "restoran123":
             st.session_state.sudah_login = True
             st.rerun()
         else:
@@ -138,22 +151,8 @@ def hitung_pendapatan(data):
         data["Total_Pendapatan"] = data["jumlah"] * data["harga"]
     return data
 
-# Data contoh hanya dimasukkan jika tabel kosong
-if ambil_data().empty:
-    data_awal = [
-        ("Nasi Goreng", "Makanan", 10, 18000, "Pagi", "Dine-in", 1),
-        ("Mie Goreng", "Makanan", 8, 15000, "Malam", "Takeaway", 2),
-        ("Ayam Geprek", "Makanan", 12, 20000, "Malam", "Dine-in", 3),
-        ("Es Teh", "Minuman", 15, 5000, "Pagi", "Takeaway", 4),
-        ("Kopi Susu", "Minuman", 10, 12000, "Pagi", "Dine-in", 5),
-        ("Jus Jeruk", "Minuman", 7, 10000, "Malam", "Takeaway", 6),
-    ]
-    conn.executemany("""
-        INSERT INTO transaksi
-        (menu, kategori, jumlah, harga, shift, jenis_pesanan, meja)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, data_awal)
-    conn.commit()
+# Tidak ada data dummy. Database dimulai kosong.
+# Data hanya berasal dari transaksi yang dimasukkan pengguna atau file CSV.
 
 # =========================================================
 # NAVIGASI
@@ -168,13 +167,14 @@ if st.sidebar.button("Logout"):
     st.session_state.sudah_login = False
     st.rerun()
 
-st.title("Dashboard Penjualan Restoran Pangku")
+st.title("Dashboard Penjualan Restoran/Kafe")
 
 # =========================================================
 # HOME
 # =========================================================
 if halaman == "Home":
     st.header("Selamat Datang!")
+    st.image("https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1600&q=85", caption="Restaurant & Cafe Dashboard", use_container_width=True)
     st.write("""
     Aplikasi ini digunakan untuk memantau penjualan restoran atau kafe.
 
@@ -222,22 +222,40 @@ elif halaman == "Dashboard Analytics":
             favorit = tampil.groupby("menu", as_index=False)["jumlah"].sum().sort_values("jumlah", ascending=False)
             st.subheader("Menu Paling Favorit")
             st.plotly_chart(
-                px.bar(favorit, x="menu", y="jumlah", title="Jumlah Menu Terjual"),
+                px.bar(favorit, x="menu", y="jumlah", title="Jumlah Menu Terjual", color="menu", color_discrete_sequence=px.colors.qualitative.Set2),
                 use_container_width=True,
             )
-            omzet = tampil.groupby("shift", as_index=False)["Total_Pendapatan"].sum()
-            st.subheader("Pendapatan Berdasarkan Shift")
+            urutan_shift = ["Pagi", "Siang", "Malam"]
+            omzet = tampil.groupby("shift", as_index=False).agg(
+                Total_Pendapatan=("Total_Pendapatan", "sum"),
+                Jumlah_Transaksi=("id", "count"),
+                Menu_Terjual=("jumlah", "sum"),
+            )
+            omzet["shift"] = pd.Categorical(omzet["shift"], categories=urutan_shift, ordered=True)
+            omzet = omzet.sort_values("shift")
+            st.subheader("Analisis Penjualan Berdasarkan Shift")
             st.plotly_chart(
-                px.line(omzet, x="shift", y="Total_Pendapatan", markers=True, title="Total Pendapatan per Shift"),
+                px.bar(omzet, x="shift", y="Total_Pendapatan", color="shift",
+                       title="Total Pendapatan per Shift",
+                       labels={"shift": "Shift", "Total_Pendapatan": "Pendapatan (Rp)"},
+                       color_discrete_sequence=["#f97316", "#0ea5e9", "#8b5cf6"]),
+                use_container_width=True,
+            )
+            st.plotly_chart(
+                px.bar(omzet, x="shift", y="Jumlah_Transaksi", color="shift",
+                       title="Jumlah Transaksi per Shift",
+                       labels={"shift": "Shift", "Jumlah_Transaksi": "Jumlah Transaksi"},
+                       color_discrete_sequence=["#f97316", "#0ea5e9", "#8b5cf6"]),
                 use_container_width=True,
             )
             kategori_data = tampil.groupby("kategori", as_index=False)["jumlah"].sum()
             st.subheader("Penjualan Makanan vs Minuman")
             st.plotly_chart(
-                px.pie(kategori_data, names="kategori", values="jumlah"),
+                px.pie(kategori_data, names="kategori", values="jumlah", title="Proporsi Penjualan per Kategori", color_discrete_sequence=["#f97316", "#0ea5e9"]),
                 use_container_width=True,
             )
             st.subheader("Data Transaksi")
+            st.caption("Setiap transaksi memiliki ID sendiri. Menu yang sama diringkas pada grafik, sedangkan riwayat transaksi tetap tersimpan terpisah.")
             st.dataframe(tampil, use_container_width=True, hide_index=True)
 
 # =========================================================
@@ -246,7 +264,8 @@ elif halaman == "Dashboard Analytics":
 elif halaman == "Data Management":
     tampilkan_ikon("database")
     st.header("Data Management")
-    st.write("Tambahkan transaksi baru atau impor data CSV.")
+    st.write("Masukkan transaksi penjualan yang benar-benar terjadi, atau impor catatan penjualan dari kasir.")
+    st.info("Database dimulai kosong. Grafik dan laporan baru terisi setelah transaksi nyata dimasukkan.")
 
     with st.expander("Tambah Transaksi", expanded=True):
         with st.form("form_transaksi", clear_on_submit=True):
@@ -254,7 +273,7 @@ elif halaman == "Data Management":
             kategori = st.selectbox("Kategori", ["Makanan", "Minuman"])
             jumlah = st.number_input("Jumlah Terjual", min_value=1, value=1, step=1)
             harga = st.number_input("Harga per Menu (Rp)", min_value=0, value=10000, step=1000)
-            shift = st.selectbox("Shift", ["Pagi", "Malam"])
+            shift = st.selectbox("Shift", ["Pagi", "Siang", "Malam"])
             jenis = st.selectbox("Jenis Pesanan", ["Dine-in", "Takeaway"])
             meja = st.number_input("Nomor Meja", min_value=1, value=1, step=1)
             simpan = st.form_submit_button("Simpan Transaksi")
@@ -299,7 +318,14 @@ elif halaman == "Data Management":
             st.error(f"CSV gagal dibaca atau diimpor: {e}")
 
     st.divider()
-    st.subheader("Daftar Transaksi")
+    st.subheader("Ringkasan Menu")
+    ringkas_menu = ambil_data().groupby(["menu", "kategori"], as_index=False).agg(
+        Total_Terjual=("jumlah", "sum"), Jumlah_Transaksi=("id", "count")
+    ).sort_values("Total_Terjual", ascending=False)
+    st.dataframe(ringkas_menu, use_container_width=True, hide_index=True)
+
+    st.subheader("Riwayat Transaksi")
+    st.caption("Transaksi baru selalu mendapat ID baru. Nama menu yang sama akan masuk ke ringkasan menu, bukan menimpa riwayat lama.")
     data = ambil_data()
     st.dataframe(data, use_container_width=True, hide_index=True)
 

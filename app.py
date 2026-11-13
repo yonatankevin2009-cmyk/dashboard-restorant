@@ -129,6 +129,32 @@ div.stFormSubmitButton > button:hover {
 }
 [data-testid="stDataFrame"] { background: #fffdf7; }
 [data-testid="stTable"] { color: #342316 !important; }
+
+/* Toolbar tabel: hanya latar tombol toolbar yang diubah menjadi cokelat */
+[data-testid="stElementToolbar"],
+[data-testid="stElementToolbar"] > div {
+    background: #6b452d !important;
+    background-color: #6b452d !important;
+    border: 1px solid #8a6242 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 3px 10px rgba(52, 35, 22, .22) !important;
+}
+[data-testid="stElementToolbar"] button,
+[data-testid="stElementToolbar"] button:hover,
+[data-testid="stElementToolbar"] [role="button"],
+[data-testid="stElementToolbar"] [role="button"]:hover {
+    background: #6b452d !important;
+    background-color: #6b452d !important;
+    color: #fff8e7 !important;
+    border-color: #8a6242 !important;
+}
+[data-testid="stElementToolbar"] svg,
+[data-testid="stElementToolbar"] svg path {
+    color: #fff8e7 !important;
+    fill: currentColor !important;
+    stroke: #fff8e7 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 

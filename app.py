@@ -15,54 +15,50 @@ st.markdown("""
 <style>
 :root { color-scheme: light; }
 .stApp {
-    background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 48%, #eff6ff 100%);
-    color: #172b4d !important;
+    background: linear-gradient(135deg, #fff8e7 0%, #f7e7bd 52%, #fffaf0 100%);
+    color: #342316 !important;
 }
-/* Warna dasar semua tulisan */
 html, body, [class*="css"], .stMarkdown, .stText,
 p, label, small, li, span, div {
-    color: #243247;
+    color: #342316;
 }
-h1, h2, h3, h4, h5, h6,
-[data-testid="stHeader"] h1,
-[data-testid="stHeader"] h2 {
-    color: #17324d !important;
+h1, h2, h3, h4, h5, h6 {
+    color: #3b2416 !important;
     font-weight: 750 !important;
 }
 .stCaption, [data-testid="stCaptionContainer"] {
-    color: #526174 !important;
+    color: #6b5848 !important;
 }
-/* Sidebar gelap dengan tulisan putih */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #17324d 0%, #245b73 100%);
+    background: linear-gradient(180deg, #5b3825 0%, #7a5033 100%);
 }
-[data-testid="stSidebar"] * { color: #ffffff !important; }
+[data-testid="stSidebar"] * { color: #fff8e7 !important; }
 .block-container { padding-top: 1.8rem; }
 /* Kartu statistik */
 [data-testid="stMetric"] {
-    background: #ffffff;
-    border: 1px solid #fed7aa;
+    background: #fffdf7;
+    border: 1px solid #d6b77a;
     padding: 16px;
     border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(30,41,59,.07);
+    box-shadow: 0 4px 14px rgba(74, 48, 27, .10);
 }
 [data-testid="stMetric"] label,
-[data-testid="stMetricLabel"] p { color: #526174 !important; }
+[data-testid="stMetricLabel"] p { color: #6b5848 !important; }
 [data-testid="stMetricValue"],
-[data-testid="stMetricValue"] div { color: #17324d !important; }
-/* Kolom input agar tidak hitam dan teks terlihat */
+[data-testid="stMetricValue"] div { color: #3b2416 !important; }
+/* Kolom input */
 input, textarea,
 [data-baseweb="input"] input,
 [data-baseweb="textarea"] textarea,
 [data-baseweb="select"] > div {
-    background-color: #ffffff !important;
-    color: #172b4d !important;
-    -webkit-text-fill-color: #172b4d !important;
-    border-color: #94a3b8 !important;
+    background-color: #fffdf8 !important;
+    color: #342316 !important;
+    -webkit-text-fill-color: #342316 !important;
+    border-color: #a98761 !important;
 }
 input::placeholder, textarea::placeholder {
-    color: #64748b !important;
-    -webkit-text-fill-color: #64748b !important;
+    color: #786858 !important;
+    -webkit-text-fill-color: #786858 !important;
     opacity: 1 !important;
 }
 [data-testid="stTextInput"] label,
@@ -71,13 +67,13 @@ input::placeholder, textarea::placeholder {
 [data-testid="stFileUploader"] label,
 [data-testid="stCheckbox"] label,
 [data-testid="stRadio"] label {
-    color: #243247 !important;
-    font-weight: 600 !important;
+    color: #49301f !important;
+    font-weight: 650 !important;
 }
-/* Form login tampil sebagai kartu putih */
+/* Form */
 [data-testid="stForm"] {
-    background: rgba(255,255,255,.88);
-    border: 1px solid #d1d5db;
+    background: rgba(255,253,247,.94);
+    border: 1px solid #c9a875;
     border-radius: 16px;
     padding: 22px;
 }
@@ -85,9 +81,9 @@ input::placeholder, textarea::placeholder {
 div.stButton > button,
 div.stDownloadButton > button,
 div.stFormSubmitButton > button {
-    background: #ea580c !important;
+    background: #a85d27 !important;
     color: #ffffff !important;
-    border: 0;
+    border: 1px solid #8b451f !important;
     border-radius: 9px;
     font-weight: 650;
 }
@@ -97,16 +93,37 @@ div.stFormSubmitButton > button * { color: #ffffff !important; }
 div.stButton > button:hover,
 div.stDownloadButton > button:hover,
 div.stFormSubmitButton > button:hover {
-    background: #c2410c !important;
+    background: #82451f !important;
     color: #ffffff !important;
 }
-/* Pesan informasi dan tabel */
-[data-testid="stAlert"] * { color: #243247 !important; }
-[data-testid="stDataFrame"] { background: #ffffff; }
+/* Kotak info: cokelat tua dengan teks krem agar kontras */
+[data-testid="stAlert"],
+[data-testid="stAlert"] [data-testid="stMarkdownContainer"] {
+    background: #6b452d !important;
+    border-color: #8a6242 !important;
+    border-radius: 12px !important;
+}
+[data-testid="stAlert"] *,
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] span,
+[data-testid="stAlert"] div {
+    color: #fff8e7 !important;
+    -webkit-text-fill-color: #fff8e7 !important;
+}
+/* Expander */
 [data-testid="stExpander"] {
-    background: rgba(255,255,255,.72);
+    background: #fffdf7 !important;
+    border: 1px solid #c9a875 !important;
     border-radius: 12px;
 }
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary * {
+    background: #6b452d !important;
+    color: #fff8e7 !important;
+    -webkit-text-fill-color: #fff8e7 !important;
+}
+[data-testid="stDataFrame"] { background: #fffdf7; }
+[data-testid="stTable"] { color: #342316 !important; }
 </style>
 """, unsafe_allow_html=True)
 
